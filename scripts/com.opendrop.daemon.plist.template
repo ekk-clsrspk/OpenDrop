@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  OpenDrop macOS LaunchAgent template.
+  Do not load this file directly — run scripts/install-mac.sh, which stamps
+  in the absolute binary path and installs it to ~/Library/LaunchAgents/.
+  Placeholders: __OPENDROP_BIN__  __OPENDROP_WORKDIR__  __HOME__
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.opendrop.daemon</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__OPENDROP_BIN__</string>
+    <string>daemon</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>__OPENDROP_WORKDIR__</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>__HOME__/.opendrop/daemon.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/.opendrop/daemon.err.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+  </dict>
+</dict>
+</plist>

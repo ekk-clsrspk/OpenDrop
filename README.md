@@ -7,10 +7,12 @@ Single Go binary. No cloud, no accounts. Same WiFi only.
 ```bash
 make build
 ./opendrop-darwin-arm64 status        # creates ~/.opendrop/config.yaml + prints pairing token
-./scripts/opendrop-tmux.sh start      # runs daemon in tmux session `opendrop`
+./scripts/install-mac.sh              # persistent LaunchAgent: runs at login, restarts on crash
 ./opendrop-darwin-arm64 peers         # find your Windows box
 ./opendrop-darwin-arm64 send ./photo.jpg --to <peer-name-or-ip>
 ```
+
+`scripts/opendrop-tmux.sh` remains as a manual/debug runner (`start`/`stop`/`status`); stop it before using the LaunchAgent so they don't fight over :53317.
 
 Copy text on one machine → auto-appears on the other. `opendrop clip pause` before copying passwords.
 
