@@ -1,43 +1,62 @@
 #!/bin/bash
-# OpenDrop — install macOS LaunchAgent (primary runner; replaces tmux).
-# Usage: ./scripts/install-mac.sh [--binary ./opendrop-darwin-arm64] [--unload]
+# OpenDrop — install macOS LaunchAgents (daemon :53317 + web UI :8655).
+# These are the primary runners; they start at login and restart on crash.
+# Usage: ./scripts/install-mac.sh [--unload] [--daemon-only | --web-only]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-BIN="opendrop-darwin-arm64"
 UNLOAD_ONLY=0
+ONLY=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --binary) BIN="$2"; shift 2 ;;
     --unload) UNLOAD_ONLY=1; shift ;;
+    --daemon-only) ONLY="daemon"; shift ;;
+    --web-only) ONLY="web"; shift ;;
     *) echo "unknown arg: $1"; exit 2 ;;
   esac
 done
 
-LABEL="com.opendrop.daemon"
 AGENT_DIR="$HOME/Library/LaunchAgents"
-PLIST="$AGENT_DIR/$LABEL.plist"
-
-if launchctl list "$LABEL" >/dev/null 2>&1; then
-  echo "unloading existing $LABEL …"
-  launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || launchctl unload "$PLIST" 2>/dev/null || true
-fi
-if [[ "$UNLOAD_ONLY" == "1" ]]; then echo "unloaded."; exit 0; fi
-
-if [[ ! -x "$BIN" ]]; then
-  echo "building $BIN …"
-  go build -o "$BIN" ./cmd/opendrop
-fi
-ABS_BIN="$(cd "$(dirname "$BIN")" && pwd)/$(basename "$BIN")"
-WORKDIR="$(pwd)"
 mkdir -p "$AGENT_DIR" "$HOME/.opendrop"
 
-sed -e "s#__OPENDROP_BIN__#$ABS_BIN#" \
-    -e "s#__OPENDROP_WORKDIR__#$WORKDIR#" \
-    -e "s#__HOME__#$HOME#" \
-    scripts/com.opendrop.daemon.plist.template > "$PLIST"
-chmod 644 "$PLIST"
-echo "wrote $PLIST"
+unload() {
+  local label="$1"
+  if launchctl list "$label" >/dev/null 2>&1; then
+    echo "unloading $label …"
+    launchctl bootout "gui/$(id -u)/$label" 2>/dev/null \
+      || launchctl unload "$AGENT_DIR/$label.plist" 2>/dev/null || true
+  fi
+}
+
+install_agent() {
+  local label="$1" template="$2" bin="$3" build_pkg="$4"
+  local plist="$AGENT_DIR/$label.plist"
+  unload "$label"
+  if [[ "$UNLOAD_ONLY" == "1" ]]; then return 0; fi
+  if [[ ! -x "$bin" ]]; then
+    echo "building $bin …"
+    go build -o "$bin" "$build_pkg"
+  fi
+  local abs_bin="$(cd "$(dirname "$bin")" && pwd)/$(basename "$bin")"
+  sed -e "s#__OPENDROP_BIN__#$abs_bin#" \
+      -e "s#__OPENDROP_WORKDIR__#$(pwd)#" \
+      -e "s#__HOME__#$HOME#" \
+      "scripts/$template" > "$plist"
+  chmod 644 "$plist"
+  echo "wrote $plist"
+  launchctl bootstrap "gui/$(id -u)" "$plist" 2>&1 || launchctl load "$plist" 2>&1 || true
+}
+
+if [[ "$ONLY" != "web" ]]; then
+  install_agent "com.opendrop.daemon" "com.opendrop.daemon.plist.template" \
+    "opendrop-darwin-arm64" "./cmd/opendrop"
+fi
+if [[ "$ONLY" != "daemon" ]]; then
+  install_agent "com.opendrop.web" "com.opendrop.web.plist.template" \
+    "opendrop-web" "./cmd/opendrop-web"
+fi
+
+if [[ "$UNLOAD_ONLY" == "1" ]]; then echo "unloaded."; exit 0; fi
 
 # Stop the legacy tmux runner if it's holding :53317
 if tmux has-session -t opendrop 2>/dev/null; then
@@ -46,11 +65,8 @@ if tmux has-session -t opendrop 2>/dev/null; then
   sleep 1
 fi
 
-launchctl bootstrap "gui/$(id -u)" "$PLIST" 2>&1 || launchctl load "$PLIST" 2>&1 || true
 sleep 2
-if launchctl list "$LABEL" 2>/dev/null | head -5; then
-  echo "---"
-  ./$BIN status || "$ABS_BIN" status || true
-fi
-echo "Logs: tail -f ~/.opendrop/daemon.out.log ~/.opendrop/daemon.err.log"
+echo "--- daemon:"; ./opendrop-darwin-arm64 status 2>/dev/null || true
+echo "--- web:"; curl -s --max-time 3 http://127.0.0.1:8655/api/info 2>&1 | head -c 200; echo
+echo "Logs: tail -f ~/.opendrop/{daemon,web}.{out,err}.log"
 echo "Stop: ./scripts/install-mac.sh --unload"
