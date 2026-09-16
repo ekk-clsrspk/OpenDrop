@@ -1,0 +1,5 @@
+opendrop
+opendrop.exe
+opendrop-darwin-arm64
+*.log
+.DS_Store
