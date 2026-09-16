@@ -20,7 +20,7 @@ git --version # if missing: winget install Git.Git
 ## 2. Clone + build
 
 ```powershell
-git clone <PASTE-PRIVATE-REPO-URL-HERE>
+git clone https://github.com/ekk-clsrspk/OpenDrop.git
 cd OpenDrop
 go build -o opendrop.exe ./cmd/opendrop
 .\opendrop.exe status
