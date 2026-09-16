@@ -1,5 +1,5 @@
-opendrop
-opendrop.exe
-opendrop-darwin-arm64
+/opendrop
+/opendrop.exe
+/opendrop-darwin-arm64
 *.log
 .DS_Store
