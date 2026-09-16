@@ -55,6 +55,27 @@ peers: ["192.168.1.50:53317"]   # fallback when discovery blocked
 
 Ports: `53317/TCP` (files+clipboard API), `53318/UDP` (discovery beacons).
 
+## Web UI (drag & drop)
+
+Separate service for sending files without the terminal. Loopback-only (no new LAN exposure) — it forwards through the daemon's PSK API.
+
+```bash
+make build-web
+./opendrop-web            # http://127.0.0.1:8655 (or http://opendrop.local:8655, see below)
+```
+
+Pick a peer, drag & drop 1..N files, per-file progress, plus an inbox view of received files. The daemon must be running (it does the actual receiving).
+
+Optional pretty URL on Mac (one-time, needs admin):
+
+```bash
+echo "127.0.0.1 opendrop.local" | sudo tee -a /etc/hosts
+dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+# then open http://opendrop.local:8655
+```
+
+Note: macOS reserves `.local` for Bonjour — if the name ever fails to resolve, `127.0.0.1:8655` always works.
+
 ## Windows
 
 See **[WINDOWS.md](WINDOWS.md)** — copy-paste handoff for the Windows agent (build, firewall, Task Scheduler, verify).

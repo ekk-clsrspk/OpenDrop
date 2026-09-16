@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenDrop Web</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>OpenDrop</h1>
+  <span id="device" class="badge">…</span>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Send files</h2>
+    <div class="row">
+      <label for="peer">To</label>
+      <select id="peer"></select>
+      <button id="refresh-peers" type="button">Refresh</button>
+      <span id="peer-status" class="muted"></span>
+    </div>
+    <div id="dropzone" tabindex="0">
+      <p><strong>Drag &amp; drop files here</strong></p>
+      <p class="muted">or</p>
+      <label class="btn" for="file-input">Choose files</label>
+      <input id="file-input" type="file" multiple hidden>
+    </div>
+    <ul id="queue"></ul>
+    <div class="row">
+      <button id="send" type="button" disabled>Send</button>
+      <button id="clear" type="button" class="ghost">Clear</button>
+      <span id="send-status" class="muted"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Inbox <span id="inbox-dir" class="muted small"></span></h2>
+    <div class="row">
+      <button id="refresh-inbox" type="button">Refresh</button>
+      <span id="inbox-status" class="muted"></span>
+    </div>
+    <ul id="inbox"></ul>
+  </section>
+
+  <footer class="muted small">
+    Files go peer-to-peer over your LAN using the OpenDrop daemon (it must be running).
+    Text clipboard still syncs automatically via the daemon — this page is for files.
+  </footer>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>

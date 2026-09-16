@@ -1,5 +1,7 @@
 /opendrop
 /opendrop.exe
 /opendrop-darwin-arm64
+/opendrop-web
+/opendrop-web.exe
 *.log
 .DS_Store

@@ -97,3 +97,15 @@ This creates logon task `OpenDrop` → `opendrop.exe daemon`, restart-on-failure
 | logs | daemon stdout (foreground) or Task Scheduler history; config at `%USERPROFILE%\.opendrop\config.yaml` |
 
 Report back: `status` output, `peers` output, one `send` transcript, clipboard both-directions result.
+
+## Optional: Web UI (drag & drop)
+
+Same repo, same Prereqs. Loopback-only page for sending files without the terminal:
+
+```powershell
+go build -o opendrop-web.exe ./cmd/opendrop-web
+.\opendrop-web.exe
+# open http://127.0.0.1:8655 — pick the Mac, drag & drop files
+```
+
+The daemon must be running (it receives). No firewall change needed — the page never leaves this machine; files still travel over the existing PSK-protected :53317 path.
